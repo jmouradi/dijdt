@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <style>
 :root {
   /* this has to be set to switch between light or dark */
@@ -19,22 +20,27 @@
   background-color: light-dark(var(--light-bg), var(--dark-bg));
   color: light-dark(var(--light-color), var(--dark-color));
 }
-html {
-  -webkit-text-size-adjust: 100%; /* Safari, iOS, older Chrome */
-  -moz-text-size-adjust: 100%;    /* Firefox Mobile */
-  text-size-adjust: 100%;         /* Modern Chrome, Edge, Samsung Internet */
+input {
+  padding: 0.2em;
+  box-sizing: border-box;
+  width: 100%
 }
 .light {
-  /* forces light color-scheme */
-  color-scheme: light;
+   /* forces light color-scheme */
+   color-scheme: light;
 }
 .dark {
-  /* forces dark color-scheme */
-  color-scheme: dark;
+   /* forces dark color-scheme */
+   color-scheme: dark;
 }
-.container {
+.buttonContainer {
+    display: grid; /* Places child divs side-by-side in a row */
+    grid-template-columns: 1fr 2fr;
+    column-gap: 10px
+}
+.addRemoveContainer {
   display: grid; /* Places child divs side-by-side in a row */
-  grid-template-columns: 1fr 2fr;
+  grid-template-columns: 2fr 1fr 1fr;
   column-gap: 10px
 }
 .paddedButton {
@@ -47,6 +53,7 @@ html {
 }
 .error {
   color: light-dark(var(--light-error), var(--dark-error));
+
 }
 </style>
 <script>
@@ -57,12 +64,16 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 function printError(error) {
-    const e = document.getElementById("printError");
-    e.innerHTML = "Error: " + error;
+    const e = document.getElementById("error");
+    const errorString = "Error: " + error;
+    e.innerHTML=`
+<p class="error">${errorString}</p>
+<button onClick="clearError()" class="button">Clear Error</button>
+`
 }
 
 function clearError() {
-    const e = document.getElementById("printError");
+    const e = document.getElementById("error");
     e.innerHTML = "";
 }
 
@@ -77,6 +88,7 @@ function getTimeMap() {
     } else {
         console.log("creating new map");
         timeMap = new Map();
+        timeMap.set("Example", null);
     }
     return timeMap;
 }
@@ -88,7 +100,7 @@ function renderElements(timeMap) {
     function renderMapElements(value, key, map) {
         const renderValue = value ? value : "Not Yet Pressed";
         rows.push(`
-<div class="container">
+<div class="buttonContainer">
     <div><button class="paddedButton" onClick="updateItem('${key}')">${key}</button></div>
     <div>${renderValue}</div>
 </div>
@@ -113,14 +125,12 @@ function addItem() {
     if (timeMap.has(newKey)) {
         return printError(`key '${newKey}' already present`);
     }
-    timeMap.set(newKey, undefined);
+    timeMap.set(newKey, null);
     localStorage.timeMap = JSON.stringify(Array.from(timeMap.entries()));
     renderElements(timeMap);
 }
 
 function removeItem() {
-    const e = document.getElementById("printError");
-    e.innerHTML = "";
     timeMap = getTimeMap();
     if (!timeMap) {
         return printError("failed to retrieve timeMap");
@@ -138,8 +148,6 @@ function removeItem() {
 }
 
 function updateItem(updateKey) {
-    const e = document.getElementById("printError");
-    e.innerHTML = "";
     timeMap = getTimeMap();
     if (!timeMap) {
         return printError("failed to retrieve timeMap");
@@ -154,13 +162,15 @@ function updateItem(updateKey) {
 </script>
 </head>
 <body>
-
 <h1> Did I just do that?</h1>
-<p id="result"></p>
-<input id="buttonName" type="text/html">
-<button onClick="addItem()" class="button">Add Item</button>
-<button onClick="removeItem()" class="button">Remove Item</button>
-<button onClick="clearError()" class="button">Clear Error Below</button>
-<b><p id="printError" class="error"></p></b>
+<p>Press a button to see when you last did something.</p>
+<output id="result"></output>
+<p>Add or remove items to track below.</p>
+<div class="addRemoveContainer">
+    <div><input id="buttonName" type="text/html"> </div>
+    <div><button onClick="addItem()" class="button">Add</button></div>
+    <div><button onClick="removeItem()" class="button">Remove</button></div>
+</div>
+<output id="error"></output>
 </body>
 </html>

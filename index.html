@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html>
+<head>
+<style>
+:root {
+  /* this has to be set to switch between light or dark */
+  color-scheme: light dark;
+
+  --light-bg: ghostwhite;
+  --light-color: darkslategray;
+  --light-error: darkred;
+
+  --dark-bg: black;
+  --dark-color: ghostwhite;
+  --dark-error: salmon;
+
+}
+* {
+  background-color: light-dark(var(--light-bg), var(--dark-bg));
+  color: light-dark(var(--light-color), var(--dark-color));
+}
+.light {
+  /* forces light color-scheme */
+  color-scheme: light;
+}
+.dark {
+  /* forces dark color-scheme */
+  color-scheme: dark;
+}
+.container {
+  display: grid; /* Places child divs side-by-side in a row */
+  grid-template-columns: 1fr 2fr;
+  column-gap: 10px
+}
+.paddedButton {
+    width:100%;
+    display:block;
+    border-radius: 10px;
+}
+.button {
+    border-radius:10px;
+}
+.error {
+  color: light-dark(var(--light-error), var(--dark-error));
+
+}
+</style>
+<script>
+
+document.addEventListener("DOMContentLoaded", () => {
+    timeMap = getTimeMap();
+    renderElements(timeMap);
+});
+
+function printError(error) {
+    const e = document.getElementById("printError");
+    e.innerHTML = "Error: " + error;
+}
+
+function clearError() {
+    const e = document.getElementById("printError");
+    e.innerHTML = "";
+}
+
+function getTimeMap() {
+    if (typeof(Storage) == "undefined") {
+       return printError("local storage required but unsupported.");
+    }
+    let timeMap;
+    if (localStorage.timeMap) {
+        console.log("loading existing map from storage");
+        timeMap = new Map(JSON.parse(localStorage.timeMap));
+    } else {
+        console.log("creating new map");
+        timeMap = new Map();
+    }
+    return timeMap;
+}
+
+function renderElements(timeMap) {
+    const x = document.getElementById("result");
+    x.innerHTML = "";
+    rows = [];
+    function renderMapElements(value, key, map) {
+        const renderValue = value ? value : "Not Yet Pressed";
+        rows.push(`
+<div class="container">
+    <div><button class="paddedButton" onClick="updateItem('${key}')">${key}</button></div>
+    <div>${renderValue}</div>
+</div>
+`);
+    }
+    timeMap.forEach(renderMapElements);
+    x.innerHTML = rows.join("\n");
+}
+
+function addItem() {
+    if (typeof(Storage) == "undefined") {
+        return printError("local storage undefined");
+    }
+    timeMap = getTimeMap();
+    if (!timeMap) {
+        return printError("failed to retrieve timeMap.");
+    }
+    const newKey = document.getElementById("buttonName").value;
+    if (!newKey) {
+        return printError("no item name to add");
+    }
+    if (timeMap.has(newKey)) {
+        return printError(`key '${newKey}' already present`);
+    }
+    timeMap.set(newKey, undefined);
+    localStorage.timeMap = JSON.stringify(Array.from(timeMap.entries()));
+    renderElements(timeMap);
+}
+
+function removeItem() {
+    const e = document.getElementById("printError");
+    e.innerHTML = "";
+    timeMap = getTimeMap();
+    if (!timeMap) {
+        return printError("failed to retrieve timeMap");
+    }
+    const remKey = document.getElementById("buttonName").value;
+    if (!remKey) {
+        return printError("no item name to remove");
+    }
+    if (!timeMap.has(remKey)) {
+        return printError(`key '${remKey}' not present`);
+    }
+    timeMap.delete(remKey);
+    localStorage.timeMap = JSON.stringify(Array.from(timeMap.entries()));
+    renderElements(timeMap);
+}
+
+function updateItem(updateKey) {
+    const e = document.getElementById("printError");
+    e.innerHTML = "";
+    timeMap = getTimeMap();
+    if (!timeMap) {
+        return printError("failed to retrieve timeMap");
+    }
+    if (!timeMap.has(updateKey)) {
+        return printError("key not present");
+    }
+    timeMap.set(updateKey, new Date().toLocaleString());
+    localStorage.timeMap = JSON.stringify(Array.from(timeMap.entries()));
+    renderElements(timeMap);
+}
+</script>
+</head>
+<body>
+
+<h1> Did I just do that?</h1>
+<p id="result"></p>
+<input id="buttonName" type="text/html">
+<button onClick="addItem()" class="button">Add Item</button>
+<button onClick="removeItem()" class="button">Remove Item</button>
+<button onClick="clearError()" class="button">Clear Error Below</button>
+<b><p id="printError" class="error"></p></b>
+</body>
+</html>

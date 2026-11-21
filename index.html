@@ -14,47 +14,56 @@
   --dark-bg: black;
   --dark-color: ghostwhite;
   --dark-error: salmon;
-
 }
 * {
   background-color: light-dark(var(--light-bg), var(--dark-bg));
   color: light-dark(var(--light-color), var(--dark-color));
 }
+html {
+    font-size: 112.5%;
+}
 input {
-  padding: 0.2em;
-  box-sizing: border-box;
-  width: 100%
+    padding: 0.2em;
+    box-sizing: border-box;
+    width: 100%
 }
 .light {
-   /* forces light color-scheme */
-   color-scheme: light;
+    /* forces light color-scheme */
+    color-scheme: light;
 }
 .dark {
-   /* forces dark color-scheme */
-   color-scheme: dark;
+    /* forces dark color-scheme */
+    color-scheme: dark;
 }
 .buttonContainer {
     display: grid; /* Places child divs side-by-side in a row */
     grid-template-columns: 1fr 2fr;
-    column-gap: 10px
+    column-gap: 10px;
+    row-gap: 15px;
 }
 .addRemoveContainer {
-  display: grid; /* Places child divs side-by-side in a row */
-  grid-template-columns: 2fr 1fr 1fr;
-  column-gap: 10px
+    display: grid; /* Places child divs side-by-side in a row */
+    grid-template-columns: 2fr 1fr 1fr;
+    column-gap: 10px
 }
 .paddedButton {
     width:100%;
     display:block;
     border-radius: 10px;
+    border: 2px;
+    border: 2px solid light-dark(var(--light-color), var(--dark-color));
+    font-size: 112.5%;
 }
 .button {
     border-radius:10px;
+    border: 2px solid light-dark(var(--light-color), var(--dark-color));
+    font-size: 112.5%;
 }
 .error {
-  color: light-dark(var(--light-error), var(--dark-error));
-
+    color: light-dark(var(--light-error), var(--dark-error));
 }
+/* Increase font even more on mobile */
+
 </style>
 <script>
 
@@ -96,17 +105,16 @@ function getTimeMap() {
 function renderElements(timeMap) {
     const x = document.getElementById("result");
     x.innerHTML = "";
-    rows = [];
     function renderMapElements(value, key, map) {
         const renderValue = value ? value : "Not Yet Pressed";
         rows.push(`
-<div class="buttonContainer">
-    <div><button class="paddedButton" onClick="updateItem('${key}')">${key}</button></div>
-    <div>${renderValue}</div>
-</div>
+    <div><button class="paddedButton" onClick="updateItem('${key}')">${key}</button></div>  <div>${renderValue}</div>
 `);
     }
+    rows = [];
+    rows.push(`<div class="buttonContainer">`);
     timeMap.forEach(renderMapElements);
+    rows.push(`</div>`);
     x.innerHTML = rows.join("\n");
 }
 
